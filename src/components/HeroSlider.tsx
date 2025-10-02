@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 
 interface Slide {
   image: string;
@@ -54,6 +54,8 @@ interface HeroSliderProps {
 
 const HeroSlider: React.FC<HeroSliderProps> = ({ onPackageSelect }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const touchStartRef = useRef<number | null>(null);
+  const minSwipeDistance = 50;
 
   const prevSlide = () => {
     const isFirstSlide = currentIndex === 0;
@@ -75,6 +77,27 @@ const HeroSlider: React.FC<HeroSliderProps> = ({ onPackageSelect }) => {
     const slideInterval = setInterval(nextSlide, 5000);
     return () => clearInterval(slideInterval);
   }, [nextSlide]);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartRef.current = e.targetTouches[0].clientX;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartRef.current === null) {
+        return;
+    }
+
+    const touchEnd = e.changedTouches[0].clientX;
+    const swipeDistance = touchStartRef.current - touchEnd;
+
+    if (swipeDistance > minSwipeDistance) {
+        nextSlide();
+    } else if (swipeDistance < -minSwipeDistance) {
+        prevSlide();
+    }
+
+    touchStartRef.current = null;
+  };
 
   const currentSlide = slides[currentIndex];
 
@@ -128,6 +151,8 @@ const HeroSlider: React.FC<HeroSliderProps> = ({ onPackageSelect }) => {
           handleSlideClick();
         }
       }}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
     >
       <div
         style={{ backgroundImage: `url(${currentSlide.image})` }}
