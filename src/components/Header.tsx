@@ -18,12 +18,12 @@ const Header: React.FC<HeaderProps> = ({ onOpenQuote, showBack, onBack }) => {
             disabled={!showBack}
             className={showBack ? 'cursor-pointer' : 'cursor-default'}
           >
-            <VoyanaLogoColor className="h-10 w-auto" />
+            <VoyanaLogoColor className="h-8 w-auto" />
           </button>
           
           <button 
             onClick={onOpenQuote}
-            className="bg-[#1856C5] text-white font-semibold py-2 px-6 rounded-lg shadow-md hover:bg-blue-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            className="bg-[#1856C5] text-white font-semibold py-1.5 px-5 rounded-lg shadow-md hover:bg-blue-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
             Cotiza ahora
           </button>

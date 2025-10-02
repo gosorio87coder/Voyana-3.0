@@ -66,7 +66,7 @@ const App: React.FC = () => {
   return (
     <div className="bg-white text-[#0D2B5B]">
       <Header onOpenQuote={openQuoteModal} showBack={activePage !== 'home'} onBack={handleGoBack} />
-      <main className={activePage !== 'home' ? 'pt-20' : ''}>
+      <main className={activePage !== 'home' ? 'pt-10' : ''}>
         <Suspense fallback={<LoadingSpinner />}>
           {renderPage()}
         </Suspense>
