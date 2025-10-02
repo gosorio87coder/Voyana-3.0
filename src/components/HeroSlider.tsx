@@ -7,7 +7,6 @@ interface Slide {
   destination: string;
   duration: string;
   price: string;
-  details: string;
   cta: string;
   gradient: string;
   packageId?: number;
@@ -21,7 +20,6 @@ const slides: Slide[] = [
     destination: 'Varadero & Habana',
     duration: 'Salida: 29 Diciembre',
     price: '1,299',
-    details: 'por persona',
     cta: 'Ver Detalles',
     gradient: 'from-cyan-900/80 via-amber-600/30 to-transparent',
     packageId: 7,
@@ -33,7 +31,6 @@ const slides: Slide[] = [
     destination: 'Cartagena',
     duration: 'Salida: 29 Diciembre',
     price: '1,199',
-    details: 'por persona',
     cta: 'Ver Detalles',
     gradient: 'from-sky-900/80 via-yellow-400/30 to-transparent',
     packageId: 8,
@@ -45,8 +42,7 @@ const slides: Slide[] = [
     destination: 'Europa',
     duration: 'Salida: 18 Diciembre',
     price: '3,299',
-    details: 'por persona',
-    cta: 'Explora el Circuito',
+    cta: 'Ver circuito 15D/14N',
     gradient: 'from-slate-900/80 via-indigo-700/40 to-transparent',
     packageId: 9,
   },
@@ -93,14 +89,14 @@ const HeroSlider: React.FC<HeroSliderProps> = ({ onPackageSelect }) => {
   const destinationFontSize = (() => {
     const destination = currentSlide.destination;
     if (destination === 'Varadero & Habana') {
-      return 'text-5xl md:text-7xl lg:text-8xl';
+      return 'text-4xl md:text-6xl lg:text-7xl';
     }
     if (destination === 'Cartagena') {
       // Use smaller font on mobile to prevent text wrapping/overflow
       return 'text-5xl md:text-8xl lg:text-9xl';
     }
     // Default for 'Europa'
-    return 'text-6xl md:text-8xl lg:text-9xl';
+    return 'text-5xl md:text-7xl lg:text-8xl';
   })();
 
   const subtitleClasses = (() => {
@@ -110,6 +106,13 @@ const HeroSlider: React.FC<HeroSliderProps> = ({ onPackageSelect }) => {
     }
     // Default size for other slides.
     return 'text-lg md:text-xl';
+  })();
+  
+  const verticalPositionClass = (() => {
+    if (currentSlide.destination === 'Varadero & Habana') {
+      return 'top-[56%]';
+    }
+    return 'top-[58%]';
   })();
 
 
@@ -134,19 +137,28 @@ const HeroSlider: React.FC<HeroSliderProps> = ({ onPackageSelect }) => {
         <div className="absolute inset-0 bg-black/20"></div>
       </div>
       
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white text-center p-4 w-full flex flex-col items-center">
+      <div className={`absolute ${verticalPositionClass} left-1/2 -translate-x-1/2 -translate-y-1/2 text-white text-center p-4 w-full flex flex-col items-center`}>
         <h2 className="font-great-vibes text-4xl sm:text-5xl md:text-7xl text-yellow-300 mb-2 drop-shadow-lg">{currentSlide.theme}</h2>
         <p className={`font-poppins ${subtitleClasses} font-medium text-white/95 mb-4 max-w-4xl`}>{currentSlide.subtitle}</p>
         <h1 className={`font-montserrat font-extrabold ${destinationFontSize} text-white uppercase tracking-wider drop-shadow-xl`}>{currentSlide.destination}</h1>
         
-        <div className="bg-black/30 backdrop-blur-sm inline-block px-4 py-1 rounded-full text-sm md:text-base font-semibold border border-white/30 my-6">
+        <div className="bg-black/30 backdrop-blur-sm inline-block px-4 py-1 rounded-full text-sm md:text-base font-semibold border border-white/30 mt-6 mb-3">
           {currentSlide.duration}
         </div>
         
-        <div className="my-4">
-            <p className="font-poppins text-lg md:text-xl">Desde</p>
+        <div className="flex justify-center py-2 space-x-3">
+          {slides.map((slide, slideIndex) => (
+            <button
+              aria-label={`Go to slide ${slideIndex + 1}`}
+              key={slideIndex}
+              onClick={(e) => { stopPropagation(e); goToSlide(slideIndex); }}
+              className={`w-3 h-3 rounded-full cursor-pointer transition-all duration-300 ${currentIndex === slideIndex ? 'bg-white scale-125' : 'bg-white/50 hover:bg-white/75'}`}
+            ></button>
+          ))}
+        </div>
+
+        <div className="mt-3 mb-4">
             <p className="font-montserrat font-extrabold text-5xl sm:text-6xl md:text-8xl drop-shadow-lg">US$ {currentSlide.price}</p>
-            <p className="font-poppins text-xs md:text-sm uppercase tracking-widest text-white/80">{currentSlide.details}</p>
         </div>
 
         <button
@@ -178,16 +190,6 @@ const HeroSlider: React.FC<HeroSliderProps> = ({ onPackageSelect }) => {
         </svg>
       </button>
 
-      <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex justify-center py-2 space-x-3">
-        {slides.map((slide, slideIndex) => (
-          <button
-            aria-label={`Go to slide ${slideIndex + 1}`}
-            key={slideIndex}
-            onClick={(e) => { stopPropagation(e); goToSlide(slideIndex); }}
-            className={`w-3 h-3 rounded-full cursor-pointer transition-all duration-300 ${currentIndex === slideIndex ? 'bg-white scale-125' : 'bg-white/50 hover:bg-white/75'}`}
-          ></button>
-        ))}
-      </div>
     </section>
   );
 };
