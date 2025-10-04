@@ -1,4 +1,6 @@
-import React, { useState, Suspense, lazy } from 'react';
+import React, { Suspense, lazy, useCallback } from 'react';
+import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
+
 import Header from './components/Header';
 import Footer from './components/Footer';
 import QuoteFormModal from './components/QuoteModal';
@@ -14,64 +16,88 @@ const CubaPage = lazy(() => import('./pages/CubaPage'));
 const CartagenaPage = lazy(() => import('./pages/CartagenaPage'));
 const EuropaPage = lazy(() => import('./pages/EuropaPage'));
 
-type Page = 'home' | 'punta-sal' | 'iquitos' | 'cusco' | 'cuba' | 'cartagena' | 'europa';
-
 const App: React.FC = () => {
-  const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
-  const [isInsuranceModalOpen, setIsInsuranceModalOpen] = useState(false);
-  const [activePage, setActivePage] = useState<Page>('home');
+  const [isQuoteModalOpen, setIsQuoteModalOpen] = React.useState(false);
+  const [isInsuranceModalOpen, setIsInsuranceModalOpen] = React.useState(false);
 
-  const openQuoteModal = () => setIsQuoteModalOpen(true);
-  const closeQuoteModal = () => setIsQuoteModalOpen(false);
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  const openInsuranceModal = () => setIsInsuranceModalOpen(true);
-  const closeInsuranceModal = () => setIsInsuranceModalOpen(false);
-  
-  const handleGoBack = () => {
-    setActivePage('home');
-    window.scrollTo(0, 0);
-  };
+  // === Modales ===
+  const openQuoteModal = useCallback(() => setIsQuoteModalOpen(true), []);
+  const closeQuoteModal = useCallback(() => setIsQuoteModalOpen(false), []);
 
-  const handlePackageSelect = (id: number) => {
-    let page: Page = 'home';
+  const openInsuranceModal = useCallback(() => setIsInsuranceModalOpen(true), []);
+  const closeInsuranceModal = useCallback(() => setIsInsuranceModalOpen(false), []);
+
+  // === Navegación desde Home por ID (mantiene tu contrato con HomePage) ===
+  const handlePackageSelect = useCallback((id: number) => {
     switch (id) {
-      case 1: page = 'punta-sal'; break;
-      case 2: page = 'iquitos'; break;
-      case 3: page = 'cusco'; break;
-      case 7: page = 'cuba'; break;
-      case 8: page = 'cartagena'; break;
-      case 9: page = 'europa'; break;
+      case 1: navigate('/punta-sal'); break;
+      case 2: navigate('/iquitos'); break;
+      case 3: navigate('/cusco'); break;
+      case 7: navigate('/cuba'); break;
+      case 8: navigate('/cartagena'); break;
+      case 9: navigate('/europa'); break;
       default:
-        openQuoteModal();
+        openQuoteModal(); // comportamiento original
         return;
     }
-    setActivePage(page);
     window.scrollTo(0, 0);
-  };
+  }, [navigate, openQuoteModal]);
 
-  const renderPage = () => {
-    switch (activePage) {
-      case 'punta-sal': return <PuntaSalPage onOpenQuote={openQuoteModal} />;
-      case 'iquitos': return <IquitosLodgePage onOpenQuote={openQuoteModal} />;
-      case 'cusco': return <CuscoPage onOpenQuote={openQuoteModal} />;
-      case 'cuba': return <CubaPage onOpenQuote={openQuoteModal} />;
-      case 'cartagena': return <CartagenaPage onOpenQuote={openQuoteModal} />;
-      case 'europa': return <EuropaPage onOpenQuote={openQuoteModal} />;
-      case 'home':
-      default:
-        return <HomePage onPackageSelect={handlePackageSelect} onOpenQuote={openQuoteModal} onOpenInsurance={openInsuranceModal} />;
+  // === Back ===
+  const handleGoBack = useCallback(() => {
+    // Si no hay history para atrás o vienes directo por URL,
+    // llévate a Home para que no quede "en el aire".
+    if (window.history.length <= 2) {
+      navigate('/', { replace: true });
+    } else {
+      navigate(-1);
     }
-  };
+    window.scrollTo(0, 0);
+  }, [navigate]);
+
+  const showBack = location.pathname !== '/';
 
   return (
     <div className="bg-white text-[#0D2B5B]">
-      <Header onOpenQuote={openQuoteModal} showBack={activePage !== 'home'} onBack={handleGoBack} />
-      <main className={activePage !== 'home' ? 'pt-10' : ''}>
+      <Header onOpenQuote={openQuoteModal} showBack={showBack} onBack={handleGoBack} />
+
+      <main className={showBack ? 'pt-10' : ''}>
         <Suspense fallback={<LoadingSpinner />}>
-          {renderPage()}
+          <Routes>
+            {/* Home conserva tus props originales */}
+            <Route
+              path="/"
+              element={
+                <HomePage
+                  onPackageSelect={handlePackageSelect}
+                  onOpenQuote={openQuoteModal}
+                  onOpenInsurance={openInsuranceModal}
+                />
+              }
+            />
+
+            {/* Landings con sus props */}
+            <Route path="/punta-sal" element={<PuntaSalPage onOpenQuote={openQuoteModal} />} />
+            <Route path="/iquitos" element={<IquitosLodgePage onOpenQuote={openQuoteModal} />} />
+            <Route path="/cusco" element={<CuscoPage onOpenQuote={openQuoteModal} />} />
+            <Route path="/cuba" element={<CubaPage onOpenQuote={openQuoteModal} />} />
+            <Route path="/cartagena" element={<CartagenaPage onOpenQuote={openQuoteModal} />} />
+            <Route path="/europa" element={<EuropaPage onOpenQuote={openQuoteModal} />} />
+
+            {/* Redirección opcional si tenías /home */}
+            <Route path="/home" element={<Navigate to="/" replace />} />
+
+            {/* 404 simple */}
+            <Route path="*" element={<div className="p-8">Página no encontrada.</div>} />
+          </Routes>
         </Suspense>
       </main>
+
       <Footer />
+
       <QuoteFormModal isOpen={isQuoteModalOpen} onClose={closeQuoteModal} />
       <InsuranceFormModal isOpen={isInsuranceModalOpen} onClose={closeInsuranceModal} />
     </div>
