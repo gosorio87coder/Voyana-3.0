@@ -61,7 +61,7 @@ const CuscoPage: React.FC<CuscoPageProps> = ({ onOpenQuote }) => {
   usePageTitle("Cusco"); // título de la pestaña
 
   const basePrice = 399;
-  const [selectedAddons, setSelectedAddons] = useState<typeof addons>([]);
+  const [selectedAddons, setSelectedAddons] = useState<(typeof addons)[number][]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
   const handleAddonChange = (addon: (typeof addons)[number]) => {
